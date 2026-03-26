@@ -1,0 +1,27 @@
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: customer_db
+    ports:
+      - "5433:5432"
+
+  mock-server:
+    build: ./mock-server
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+
+  pipeline-service:
+    build: ./pipeline-service
+    environment:
+      DATABASE_URL: postgresql+psycopg://postgres:password@postgres:5432/customer_db
+      MOCK_SERVER_URL: http://mock-server:5000
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - mock-server
